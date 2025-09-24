@@ -15,15 +15,17 @@ a = ""
 ssl._create_default_https_context = ssl._create_unverified_context
 
 while (a !="QUIT"):
-
     a = input("Enter the YouTube video URL: ")
     try:
         if(a!="QUIT"):
-
-            yt = YouTube(a)
+            
+            yt = YouTube(
+                a,
+                use_oauth=True,
+                allow_oauth_cache=True
+            )
 
             video_stream = yt.streams.get_highest_resolution()
-
             print(f"Downloading: {yt.title}")
             video_stream.download()
             print("Download complete!")
