@@ -1,17 +1,21 @@
 from pytube import YouTube
+from errors import handle_download_error
 
+a = ""
 
-a = input("Enter the YouTube video URL: ")
-try:
+while (a !="QUIT"):
 
-    yt = YouTube(a)
+    a = input("Enter the YouTube video URL: ")
+    try:
 
+        yt = YouTube(a)
 
-    video_stream = yt.streams.get_highest_resolution()
+        video_stream = yt.streams.get_highest_resolution()
 
-    print(f"Downloading: {yt.title}")
-    video_stream.download()
-    print("Download complete!")
+        print(f"Downloading: {yt.title}")
+        video_stream.download()
+        print("Download complete!")
 
-except Exception as e:
-    print(f"An error occurred: {e}")
+    except Exception as e:
+        error_message = handle_download_error(e)
+        print(error_message)
