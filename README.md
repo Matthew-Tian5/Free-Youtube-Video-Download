@@ -9,7 +9,7 @@ A simple and efficient YouTube video downloader built with Python and yt-dlp.
 - Progress tracking
 - Cross-platform compatibility (Windows, macOS)
 
-Please us the line: #pip install yt-dlp# for the code to run
+pip install yt-dlp
 
 ## Usage
 
