@@ -1,66 +1,62 @@
-from pytube import YouTube
-from errors import handle_download_error
+import yt_dlp
 import os
+import platform
 from tkinter import filedialog
 import tkinter as tk
-import ssl
-import time
 
 def select_download_path():
     root = tk.Tk()
-    root.withdraw() 
-    folder_selected = filedialog.askdirectory()
+    root.withdraw()
+
+    initial_dir = os.path.expanduser("~/Downloads")  
+    folder_selected = filedialog.askdirectory(initialdir=initial_dir)
     return folder_selected if folder_selected else os.getcwd()
 
-def authenticate_youtube():
-    max_retries = 3
-    retry_count = 0
+def download_progress_hook(d):
+    if d['status'] == 'downloading':
+        if 'total_bytes' in d:
+            progress = (d['downloaded_bytes'] / d['total_bytes']) * 100
+          
+            print(f"\033[K\rDownloading... {progress:.1f}%", end='', flush=True)
+    elif d['status'] == 'finished':
+        print("\nDownload complete!")
+
+def download_video(url, download_path):
+  
+    output_template = os.path.join(download_path, '%(title)s.%(ext)s').replace('\\', '/')
     
-    while retry_count < max_retries:
-        try:
+    ydl_opts = {
+        'format': 'best',
+        'outtmpl': output_template,
+        'progress_hooks': [download_progress_hook],
+        'quiet': False,
+        'no_warnings': False,
+       
+        'windowsfilenames': platform.system() == 'Windows'
+    }
+    
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            print("Starting download...")
+            ydl.download([url])
+        return True
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return False
 
-            test_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-            yt = YouTube(
-                test_url,
-                use_oauth=True,
-                allow_oauth_cache=True
-            )
-            return True
-        except Exception as e:
-            print(f"Authentication attempt {retry_count + 1} failed. Please try again.")
-            retry_count += 1
-            time.sleep(2)  
-    return False
-
-
-ssl._create_default_https_context = ssl._create_unverified_context
 
 download_path = select_download_path()
 print(f"Downloads will be saved to: {download_path}")
 
 
-print("Starting YouTube authentication process...")
-if not authenticate_youtube():
-    print("Failed to authenticate. Please try running the program again.")
-    exit(1)
+os.system('cls' if platform.system() == 'Windows' else 'clear')
 
-print("Authentication successful! You can now download videos.")
+print("YouTube Video Downloader")
+print("-" * 20)
 
-a = ""
-while (a != "QUIT"):
-    a = input("Enter the YouTube video URL (or 'QUIT' to exit): ")
-    try:
-        if a != "QUIT":
-            yt = YouTube(
-                a,
-                use_oauth=True,
-                allow_oauth_cache=True
-            )
-            video_stream = yt.streams.get_highest_resolution()
-            print(f"Downloading: {yt.title}")
-            video_stream.download(output_path=download_path)
-            print(f"Download complete! Saved to: {download_path}")
 
-    except Exception as e:
-        error_message = handle_download_error(e)
-        print(error_message)
+url = ""
+while (url != "QUIT"):
+    url = input("Enter the YouTube video URL (or 'QUIT' to exit): ")
+    if url != "QUIT":
+        download_video(url, download_path)
